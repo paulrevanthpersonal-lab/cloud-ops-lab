@@ -1,0 +1,5 @@
+const links=[...document.querySelectorAll("nav a")];const sections=[...document.querySelectorAll("main section")];
+const observer=new IntersectionObserver(entries=>{entries.filter(entry=>entry.isIntersecting).forEach(entry=>{links.forEach(link=>link.classList.toggle("active",link.hash===`#${entry.target.id}`));});},{rootMargin:"-20% 0px -65%"});sections.forEach(section=>observer.observe(section));
+document.querySelectorAll("details").forEach(detail=>detail.addEventListener("toggle",()=>{detail.querySelector("summary>b").textContent=detail.open?"−":"+";}));
+document.querySelectorAll("[data-copy]").forEach(button=>button.addEventListener("click",async()=>{await navigator.clipboard?.writeText(button.previousElementSibling.textContent);button.textContent="Copied";setTimeout(()=>button.textContent=button.textContent.includes("query")?"Copy query":"Copy command",1000);}));
+document.querySelector("#menu").addEventListener("click",()=>document.querySelector(".sidebar").classList.toggle("open"));links.forEach(link=>link.addEventListener("click",()=>document.querySelector(".sidebar").classList.remove("open")));

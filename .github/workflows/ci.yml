@@ -1,0 +1,15 @@
+name: validate
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+      - run: bash -n scripts/diagnose.sh scripts/capture_screenshots.sh
+      - run: test "$(find runbooks -name '*.md' | wc -l)" -ge 6
+      - run: grep -q "Security and Safety Boundaries" docs/SECURITY.md
+

@@ -1,0 +1,6 @@
+.terraform/
+*.tfstate*
+*.tfvars
+evidence/
+.DS_Store
+
