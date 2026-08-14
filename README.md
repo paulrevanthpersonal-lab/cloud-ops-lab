@@ -2,6 +2,8 @@
 
 > An Azure and Linux support lab for repeatable diagnostics, evidence capture, escalation, recovery validation, and operational documentation.
 
+**[Open the live operations dashboard](https://paulrevanthpersonal-lab.github.io/cloud-support-operations-lab/)**
+
 ![Operations dashboard](docs/screenshots/operations-dashboard.png)
 
 ## 1. Overview
@@ -117,4 +119,3 @@ This is a safe portfolio lab. Terraform is intentionally small, diagnostic scope
 ## 18. License
 
 Released under the [MIT License](LICENSE).
-
