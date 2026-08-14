@@ -1,12 +1,17 @@
 services:
-  runbook-dashboard:
-    image: nginx:1.27-alpine
+  operations-lab:
+    image: python:3.13-alpine
+    working_dir: /app
+    command: python server.py
     ports:
-      - "8080:80"
+      - "8080:8080"
     volumes:
-      - ./dashboard:/usr/share/nginx/html:ro
+      - ./:/app
+      - lab-data:/app/data/runtime
+    environment:
+      CLOUD_LAB_DB: /app/data/runtime/lab_runs.db
     read_only: true
     tmpfs:
-      - /var/cache/nginx
-      - /var/run
-
+      - /tmp
+volumes:
+  lab-data:

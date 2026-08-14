@@ -2,13 +2,13 @@
 
 > An Azure and Linux support lab for repeatable diagnostics, evidence capture, escalation, recovery validation, and operational documentation.
 
-**[Open the live operations dashboard](https://paulrevanthpersonal-lab.github.io/cloud-support-operations-lab/)**
+**[Open the live operations dashboard](https://paulrevanthpersonal-lab.github.io/cloud-ops-lab/)**
 
 ![Operations dashboard](docs/screenshots/operations-dashboard.png)
 
 ## 1. Overview
 
-This repository demonstrates how a cloud-support engineer approaches real operational symptoms safely and consistently. It combines a unique runbook dashboard, redacting diagnostic CLI, Azure Terraform, Docker delivery, incident templates, and automated evidence.
+This repository implements a repeatable cloud-support practice environment. It combines 30 guided exercises, 30 incident records, a searchable operations dashboard, persisted validation runs, a redacting diagnostic CLI, Azure Terraform, Docker delivery, incident templates, and automated checks.
 
 ## 2. Operational goals
 
@@ -19,7 +19,7 @@ This repository demonstrates how a cloud-support engineer approaches real operat
 
 ## 3. Lab scenarios
 
-The runbooks cover VM access, DNS drift, permission denial, deployment rollback, missing logs/alerts, and cost anomalies. Each scenario starts with impact and evidence rather than a tool-first checklist.
+The catalog contains 30 guided exercises spanning identity, Linux, DNS, TCP/IP, Azure networking, IAM/RBAC, storage, Docker, Terraform, monitoring, incident management, backup, and recovery. A separate 30-record incident library captures symptoms, root cause, safe fix, and recovery verification.
 
 ## 4. Experience design
 
@@ -29,13 +29,15 @@ The dashboard uses a tactile editorial-and-terminal visual system that is delibe
 
 ## 5. Architecture
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the relationship among runbooks, diagnostics, evidence, Terraform, logging, and alerts.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the relationship among the browser workspace, Python API, SQLite run history, diagnostics, Terraform, logging, and alerts.
 
 ## 6. Repository components
 
 | Component | Purpose |
 |---|---|
 | `dashboard/` | Searchable operator experience |
+| `data/labs.json` | 30 exercises and 30 resolved incident patterns |
+| `server.py` | Standard-library API, validation-run persistence, and static delivery |
 | `runbooks/` | Symptom-driven support procedures |
 | `scripts/diagnose.sh` | DNS, TCP, HTTP, and route evidence |
 | `infra/` | Azure Log Analytics and action-group lab |
@@ -43,9 +45,11 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the relationship among runb
 
 ## 7. Quick start
 
-Open `dashboard/index.html` directly, or serve it with Docker:
+Run with Python or Docker:
 
 ```bash
+python3 server.py
+# or
 docker compose up
 ```
 
@@ -74,7 +78,7 @@ The configuration creates an isolated resource group, Log Analytics workspace, a
 
 ## 10. Runbook standard
 
-Every runbook includes scope, evidence, safe workflow, escalation triggers, and recovery verification. Start with the [VM access workflow](runbooks/access.md) or [DNS workflow](runbooks/dns.md).
+Every guided exercise includes objective, environment, commands, verification, rollback, and evidence requirements. The deeper operational runbooks include scope, safe workflow, escalation triggers, and recovery verification.
 
 ## 11. Evidence handling
 
@@ -90,7 +94,7 @@ Headless Chrome writes desktop and mobile evidence under `docs/screenshots/`.
 
 ## 13. Validation and CI
 
-GitHub Actions checks Terraform formatting, Bash syntax, required runbook coverage, and security documentation on each push and pull request.
+GitHub Actions checks all 60 data records, Python unit tests, JavaScript syntax, Terraform formatting, Bash syntax, required runbook coverage, and security documentation on each push and pull request.
 
 ## 14. Security model
 
@@ -110,7 +114,7 @@ The lab never stores credentials and never automates destructive recovery. Read 
 - Add Azure Policy and budget modules
 - Add packet-loss and TLS certificate modes
 - Export evidence bundles as signed archives
-- Add a mock incident tabletop exercise
+- Export a selected lab run as a signed evidence bundle
 
 ## 17. Status and limitations
 

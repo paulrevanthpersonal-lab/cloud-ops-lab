@@ -12,4 +12,6 @@ jobs:
       - run: bash -n scripts/diagnose.sh scripts/capture_screenshots.sh
       - run: test "$(find runbooks -name '*.md' | wc -l)" -ge 6
       - run: grep -q "Security and Safety Boundaries" docs/SECURITY.md
-
+      - run: python -m unittest discover -s tests -v
+      - run: node --check dashboard/app.js
+      - run: python -c "import json; d=json.load(open('data/labs.json')); assert len(d['exercises']) == 30 and len(d['incidents']) == 30"

@@ -3,4 +3,6 @@
 *.tfvars
 evidence/
 .DS_Store
-
+data/*.db
+__pycache__/
+*.pyc
