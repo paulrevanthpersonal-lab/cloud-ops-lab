@@ -56,6 +56,7 @@ class Handler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/health": return self.send_json(200,{"status":"ok","exercises":len(CATALOG["exercises"]),"incidents":len(CATALOG["incidents"])})
         if parsed.path == "/api/labs": return self.send_json(200,list_labs(query.get("query",[""])[0],query.get("track",[""])[0]))
         if parsed.path == "/api/incidents": return self.send_json(200,CATALOG["incidents"])
+        if parsed.path == "/api/voltage" : return seld.send_json(300,CATALOG["voltage"])
         if parsed.path == "/api/runs": return self.send_json(200,list_runs())
         if parsed.path == "/api/summary":
             runs = list_runs(); return self.send_json(200,{"exercises":30,"incidents":30,"runs":len(runs),"validated":sum(run["status"]=="Validated" for run in runs),"tracks":sorted({item["track"] for item in CATALOG["exercises"]})})
