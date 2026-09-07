@@ -6,7 +6,7 @@ import sqlite3
 from datetime import UTC, datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 ROOT = Path(__file__).resolve().parent
 CATALOG = json.loads((ROOT / "data" / "labs.json").read_text())
@@ -49,6 +49,47 @@ def list_runs() -> list[dict]:
 
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs): super().__init__(*args, directory=str(ROOT), **kwargs)
+    def send_head(self):
+        """Use one public-file boundary for inherited GET and HEAD handling."""
+        parsed = urlparse(self.path)
+        path = unquote(parsed.path)
+        if "\x00" in path or "\\" in path or any(
+            part.startswith(".") for part in path.split("/") if part
+        ):
+            self.send_error(404, "File not found")
+            return None
+
+        aliases = {"/": "index.html", "/dashboard": "dashboard/index.html",
+                   "/dashboard/": "dashboard/index.html"}
+        relative = Path(aliases.get(path, path.lstrip("/")))
+        public = relative.as_posix() in {"index.html", "README.md", "LICENSE", "data/labs.json"}
+        public = public or (
+            len(relative.parts) > 1
+            and relative.suffix in {
+                "dashboard": {".html", ".css", ".js"},
+                "docs": {".md", ".png"},
+                "runbooks": {".md"},
+            }.get(relative.parts[0], set())
+        )
+        root = ROOT.resolve()
+        target = root / relative
+        # Public extensions alone are insufficient: reject linked files/directories.
+        try:
+            permitted = public and target.resolve() == target and target.is_file()
+        except (OSError, RuntimeError):
+            permitted = False
+        if not permitted:
+            self.send_error(404, "File not found")
+            return None
+        if path == "/dashboard":
+            self.send_response(301)
+            self.send_header("Location", "/dashboard/" + ("?" + parsed.query if parsed.query else ""))
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return None
+        self.path = "/" + relative.as_posix()
+        return super().send_head()
+
     def send_json(self, status: int, payload: object) -> None:
         raw = json.dumps(payload).encode(); self.send_response(status); self.send_header("Content-Type","application/json"); self.send_header("Content-Length",str(len(raw))); self.send_header("Cache-Control","no-store"); self.end_headers(); self.wfile.write(raw)
     def do_GET(self):
@@ -56,10 +97,11 @@ class Handler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/health": return self.send_json(200,{"status":"ok","exercises":len(CATALOG["exercises"]),"incidents":len(CATALOG["incidents"])})
         if parsed.path == "/api/labs": return self.send_json(200,list_labs(query.get("query",[""])[0],query.get("track",[""])[0]))
         if parsed.path == "/api/incidents": return self.send_json(200,CATALOG["incidents"])
-        if parsed.path == "/api/voltage" : return seld.send_json(300,CATALOG["voltage"])
         if parsed.path == "/api/runs": return self.send_json(200,list_runs())
         if parsed.path == "/api/summary":
             runs = list_runs(); return self.send_json(200,{"exercises":30,"incidents":30,"runs":len(runs),"validated":sum(run["status"]=="Validated" for run in runs),"tracks":sorted({item["track"] for item in CATALOG["exercises"]})})
+        if parsed.path == "/api" or parsed.path.startswith("/api/"):
+            return self.send_json(404, {"error": "Route not found"})
         return super().do_GET()
     def do_POST(self):
         if urlparse(self.path).path != "/api/runs": return self.send_json(404,{"error":"Route not found"})
