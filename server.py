@@ -6,7 +6,7 @@ import sqlite3
 from datetime import UTC, datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import parse_qs, quote, unquote, urlparse
 
 ROOT = Path(__file__).resolve().parent
 CATALOG = json.loads((ROOT / "data" / "labs.json").read_text())
@@ -87,7 +87,8 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             self.end_headers()
             return None
-        self.path = "/" + relative.as_posix()
+        # The inherited handler decodes URLs; preserve the validated literal path.
+        self.path = "/" + quote(relative.as_posix(), safe="/")
         return super().send_head()
 
     def send_json(self, status: int, payload: object) -> None:

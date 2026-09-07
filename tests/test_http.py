@@ -43,6 +43,11 @@ class HttpBoundaryTests(unittest.TestCase):
         outside.write_text("synthetic outside fixture")
         (cls.root / "dashboard/outside.js").symlink_to(outside)
         (cls.root / "docs/linked").symlink_to(cls.root / "runbooks", target_is_directory=True)
+        (cls.root / "private.js").write_text("synthetic root-only content")
+        encoded_dir = cls.root / "dashboard/%2e%2e"
+        encoded_dir.mkdir()
+        (encoded_dir / "private.js").write_text("public percent-named fixture")
+        (cls.root / "docs/encoding?#.md").write_text("public punctuation fixture")
         cls.root_patch = patch.object(server, "ROOT", cls.root)
         cls.db_patch = patch.object(server, "DB_PATH", cls.root / "data/runs.db")
         cls.root_patch.start()
@@ -132,6 +137,20 @@ class HttpBoundaryTests(unittest.TestCase):
                 self.assertEqual(status, 404)
                 self.assertIn("application/json", headers["Content-Type"])
                 self.assertIn("error", json.loads(body))
+
+    def test_url_decoding_serves_the_exact_validated_file(self):
+        for path, expected in (
+            ("/dashboard/%252e%252e/private.js", b"public percent-named fixture"),
+            ("/docs/encoding%3F%23.md", b"public punctuation fixture"),
+        ):
+            with self.subTest(path=path):
+                status, _, body = self.request(path)
+                self.assertEqual(status, 200)
+                self.assertEqual(body, expected)
+                status, headers, body = self.request(path, "HEAD")
+                self.assertEqual(status, 200)
+                self.assertEqual(int(headers["Content-Length"]), len(expected))
+                self.assertEqual(body, b"")
 
     def test_catalog_filter_and_run_persistence_still_work_over_http(self):
         status, _, body = self.request("/api/labs?track=Identity")
